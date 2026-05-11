@@ -711,9 +711,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let allRows = [];
     let lastQuery = '';
+    let isSearchActive = false;
 
     window.addEventListener('scroll', () => {
         scrollBtn.classList.toggle('show', window.scrollY > 300);
+        updateFixedSearch();
     });
 
     scrollBtn.addEventListener('click', () => {
@@ -726,31 +728,33 @@ document.addEventListener('DOMContentLoaded', () => {
         document.documentElement.style.setProperty('--toolbar-height', `${Math.max(0, toolbarHeight)}px`);
     }
 
-    window.addEventListener('resize', updateStickyHeader);
+    window.addEventListener('resize', updateFixedSearch);
     updateStickyHeader();
-
-    function enableFixedSearch() {
-        document.body.classList.add('search-fixed');
-        updateStickyHeader();
-    }
-
-    function disableFixedSearch() {
-        window.setTimeout(() => {
-            const activeElement = document.activeElement;
-            const shouldStayFixed = activeElement === searchInput || activeElement === clearSearchBtn;
-
-            if (!shouldStayFixed) {
-                document.body.classList.remove('search-fixed');
-                updateStickyHeader();
-            }
-        }, 0);
-    }
 
     const JSON_URL = 'https://opensheet.elk.sh/1Q-0xFy2av5hAkWYrXFKf0crqd1Ag_GMr0x-68LFf4nE/PERFAMO%20%5B%D0%90%D0%A1%D0%9E%D0%A0%D0%A2%D0%98%D0%9C%D0%95%D0%9D%D0%A2%20%D0%A2%D0%90%20%D0%A6%D0%86%D0%9D%D0%98%5D';
 
     function getSearchStartY() {
         if (!contentWrapper) return 0;
         return contentWrapper.getBoundingClientRect().top + window.scrollY;
+    }
+
+    function updateFixedSearch() {
+        const shouldBeFixed = isSearchActive && window.scrollY >= getSearchStartY() - 1;
+        document.body.classList.toggle('search-fixed', shouldBeFixed);
+        updateStickyHeader();
+    }
+
+    function enableFixedSearch() {
+        isSearchActive = true;
+        updateFixedSearch();
+    }
+
+    function disableFixedSearch() {
+        window.setTimeout(() => {
+            const activeElement = document.activeElement;
+            isSearchActive = activeElement === searchInput || activeElement === clearSearchBtn;
+            updateFixedSearch();
+        }, 0);
     }
 
     function keepSearchAnchored(shouldAnchor) {
