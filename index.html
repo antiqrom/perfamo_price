@@ -379,6 +379,10 @@ tr:nth-child(even) {
   overflow-wrap: normal;
 }
 
+.price-currency {
+  white-space: nowrap;
+}
+
 .cell-green {
   background-color: var(--green) !important;
 }
@@ -559,6 +563,10 @@ tbody tr.selected-row {
     line-height: 1.15;
     white-space: normal;
     overflow-wrap: anywhere;
+  }
+
+  .price-currency {
+    display: block;
   }
 
   .green-col {
@@ -820,6 +828,11 @@ document.addEventListener('DOMContentLoaded', () => {
         return cleaned || '-';
     }
 
+    function formatPriceHTML(value) {
+        const price = escapeHTML(cleanPrice(value));
+        return price.replace(/\s*(грн|₴)\s*$/i, ' <span class="price-currency">$1</span>');
+    }
+
     function getHighlightedText(text, query) {
         const value = String(text || '');
         if (!query) return value;
@@ -835,7 +848,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        resultCount.textContent = visible === total ? `${total} позицій` : `Знайдено: ${visible} з ${total}`;
+        resultCount.textContent = visible === total ? `${total} позицій` : `знайдено: ${visible} з ${total}`;
     }
 
     function renderState(message, tone = 'neutral') {
@@ -909,7 +922,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const td = document.createElement('td');
                 td.className = 'price';
                 td.dataset.volume = ml;
-                td.textContent = cleanPrice(item[ml]);
+                td.innerHTML = formatPriceHTML(item[ml]);
                 tr.appendChild(td);
             });
 
