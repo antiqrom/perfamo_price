@@ -653,7 +653,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const stickyToolbar = document.querySelector('.sticky-toolbar');
     const contentWrapper = document.querySelector('.content-wrapper');
     const scrollBtn = document.getElementById('scrollToTopBtn');
-    const priceTable = document.querySelector('table');
 
     let allRows = [];
     let lastQuery = '';
@@ -695,18 +694,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return contentWrapper.getBoundingClientRect().top + window.scrollY;
     }
 
-    function getTableStartY() {
-        if (!priceTable) return getSearchStartY();
-        const toolbarHeight = stickyToolbar ? stickyToolbar.getBoundingClientRect().height : 0;
-        const stickyTableGap = parseFloat(window.getComputedStyle(document.documentElement).getPropertyValue('--sticky-table-gap')) || 0;
-        const headerRow = priceTable.querySelector('thead tr');
-        const headerHeight = headerRow ? headerRow.getBoundingClientRect().height : 0;
-        const tableTop = priceTable.getBoundingClientRect().top + window.scrollY;
-        const borderBuffer = 4;
-
-        return Math.max(getSearchStartY(), tableTop - toolbarHeight - stickyTableGap - headerHeight - borderBuffer);
-    }
-
     function keepSearchAnchored(shouldAnchor) {
         if (!shouldAnchor) return;
 
@@ -721,12 +708,6 @@ document.addEventListener('DOMContentLoaded', () => {
             anchorSearch();
             window.requestAnimationFrame(anchorSearch);
             window.setTimeout(anchorSearch, 120);
-        });
-    }
-
-    function showEmptyState() {
-        window.requestAnimationFrame(() => {
-            window.scrollTo({ top: getTableStartY(), behavior: 'auto' });
         });
     }
 
@@ -788,7 +769,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!data.length) {
             renderState('За вашим запитом нічого не знайдено');
             updateResultCount(0, allRows.length);
-            showEmptyState();
             return;
         }
 
