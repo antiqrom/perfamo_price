@@ -22,6 +22,7 @@
   --block-gap: 16px;
   --sticky-top-gap: 10px;
   --sticky-table-gap: 0px;
+  --fixed-toolbar-top: 0px;
 }
 
 * {
@@ -169,6 +170,7 @@ body.search-fixed .content-wrapper {
 
 body.search-fixed .sticky-toolbar {
   position: fixed;
+  top: var(--fixed-toolbar-top);
   left: 50%;
   width: calc(100% - 32px);
   max-width: 1180px;
@@ -177,7 +179,7 @@ body.search-fixed .sticky-toolbar {
 
 body.search-fixed .empty-search-message.is-visible {
   position: fixed;
-  top: var(--toolbar-height);
+  top: calc(var(--fixed-toolbar-top) + var(--toolbar-height));
   left: 50%;
   width: calc(100% - 32px);
   max-width: 1180px;
@@ -318,7 +320,7 @@ tbody tr:last-child td {
 
 th {
   position: sticky;
-  top: calc(var(--toolbar-height) + var(--sticky-table-gap));
+  top: calc(var(--fixed-toolbar-top) + var(--toolbar-height) + var(--sticky-table-gap));
   z-index: 90;
   border-top: 2px solid var(--mauve);
   border-right: 2px solid var(--mauve);
@@ -537,7 +539,7 @@ tbody tr.selected-row {
 
   th {
     position: sticky;
-    top: calc(var(--toolbar-height) + var(--sticky-table-gap));
+    top: calc(var(--fixed-toolbar-top) + var(--toolbar-height) + var(--sticky-table-gap));
     z-index: 90;
   }
 
@@ -729,6 +731,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     window.addEventListener('resize', updateFixedSearch);
+
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', updateFixedSearch);
+        window.visualViewport.addEventListener('scroll', updateFixedSearch);
+    }
+
     updateStickyHeader();
 
     const JSON_URL = 'https://opensheet.elk.sh/1Q-0xFy2av5hAkWYrXFKf0crqd1Ag_GMr0x-68LFf4nE/PERFAMO%20%5B%D0%90%D0%A1%D0%9E%D0%A0%D0%A2%D0%98%D0%9C%D0%95%D0%9D%D0%A2%20%D0%A2%D0%90%20%D0%A6%D0%86%D0%9D%D0%98%5D';
@@ -738,8 +746,20 @@ document.addEventListener('DOMContentLoaded', () => {
         return contentWrapper.getBoundingClientRect().top + window.scrollY;
     }
 
+    function getViewportTop() {
+        return window.visualViewport ? window.visualViewport.offsetTop : 0;
+    }
+
+    function isSearchAtViewportTop() {
+        if (!contentWrapper) return false;
+        return contentWrapper.getBoundingClientRect().top <= getViewportTop() + 1;
+    }
+
     function updateFixedSearch() {
-        const shouldBeFixed = isSearchActive && window.scrollY >= getSearchStartY() - 1;
+        const viewportTop = Math.max(0, getViewportTop());
+        const shouldBeFixed = isSearchActive && isSearchAtViewportTop();
+
+        document.documentElement.style.setProperty('--fixed-toolbar-top', `${shouldBeFixed ? viewportTop : 0}px`);
         document.body.classList.toggle('search-fixed', shouldBeFixed);
         updateStickyHeader();
     }
@@ -747,6 +767,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function enableFixedSearch() {
         isSearchActive = true;
         updateFixedSearch();
+        window.requestAnimationFrame(updateFixedSearch);
+        window.setTimeout(updateFixedSearch, 120);
+        window.setTimeout(updateFixedSearch, 300);
     }
 
     function disableFixedSearch() {
