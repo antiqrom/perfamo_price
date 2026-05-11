@@ -235,6 +235,23 @@ input#search:focus {
   -webkit-overflow-scrolling: touch;
 }
 
+.empty-search-message {
+  display: none;
+  padding: 18px 10px 4px;
+  color: #555;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.empty-search-message.is-visible {
+  display: block;
+}
+
+.table-wrapper.is-hidden {
+  display: none;
+}
+
 table {
   width: 100%;
   min-width: 760px;
@@ -612,6 +629,8 @@ tbody tr.selected-row {
       </div>
     </div>
 
+    <div id="emptySearchMessage" class="empty-search-message" aria-live="polite">За вашим запитом нічого не знайдено</div>
+
     <div class="table-wrapper">
       <table>
         <colgroup>
@@ -650,7 +669,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('search');
     const clearSearchBtn = document.getElementById('clearSearch');
     const resultCount = document.getElementById('counter');
+    const emptySearchMessage = document.getElementById('emptySearchMessage');
     const stickyToolbar = document.querySelector('.sticky-toolbar');
+    const tableWrapper = document.querySelector('.table-wrapper');
     const contentWrapper = document.querySelector('.content-wrapper');
     const scrollBtn = document.getElementById('scrollToTopBtn');
 
@@ -753,6 +774,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderState(message, tone = 'neutral') {
+        tableWrapper.classList.remove('is-hidden');
+        emptySearchMessage.classList.remove('is-visible');
         tableBody.innerHTML = '';
         const tr = document.createElement('tr');
         const td = document.createElement('td');
@@ -767,10 +790,14 @@ document.addEventListener('DOMContentLoaded', () => {
         tableBody.innerHTML = '';
 
         if (!data.length) {
-            renderState('За вашим запитом нічого не знайдено');
+            tableWrapper.classList.add('is-hidden');
+            emptySearchMessage.classList.add('is-visible');
             updateResultCount(0, allRows.length);
             return;
         }
+
+        tableWrapper.classList.remove('is-hidden');
+        emptySearchMessage.classList.remove('is-visible');
 
         const fragment = document.createDocumentFragment();
 
