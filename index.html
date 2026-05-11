@@ -235,8 +235,12 @@ input#search:focus {
 }
 
 .empty-search-message {
+  position: sticky;
+  top: var(--toolbar-height);
+  z-index: 80;
   display: none;
-  padding: 18px 10px 4px;
+  padding: 18px 10px 10px;
+  background: var(--bg);
   color: #555;
   text-align: center;
   font-size: 15px;
