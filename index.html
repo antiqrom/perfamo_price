@@ -163,6 +163,27 @@ body {
   background: var(--bg);
 }
 
+body.search-fixed .content-wrapper {
+  padding-top: var(--toolbar-height);
+}
+
+body.search-fixed .sticky-toolbar {
+  position: fixed;
+  left: 50%;
+  width: calc(100% - 32px);
+  max-width: 1180px;
+  transform: translateX(-50%);
+}
+
+body.search-fixed .empty-search-message.is-visible {
+  position: fixed;
+  top: var(--toolbar-height);
+  left: 50%;
+  width: calc(100% - 32px);
+  max-width: 1180px;
+  transform: translateX(-50%);
+}
+
 .counter {
   min-width: 0;
   color: var(--muted);
@@ -474,6 +495,11 @@ tbody tr.selected-row {
     padding: var(--sticky-top-gap) 0 8px;
   }
 
+  body.search-fixed .sticky-toolbar,
+  body.search-fixed .empty-search-message.is-visible {
+    width: calc(100% - 20px);
+  }
+
   .counter,
   .search-container {
     grid-column: 1;
@@ -545,6 +571,11 @@ tbody tr.selected-row {
 
 @media (max-width: 520px) {
   .page-shell {
+    width: calc(100% - 16px);
+  }
+
+  body.search-fixed .sticky-toolbar,
+  body.search-fixed .empty-search-message.is-visible {
     width: calc(100% - 16px);
   }
 
@@ -697,6 +728,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.addEventListener('resize', updateStickyHeader);
     updateStickyHeader();
+
+    function enableFixedSearch() {
+        document.body.classList.add('search-fixed');
+        updateStickyHeader();
+    }
+
+    function disableFixedSearch() {
+        window.setTimeout(() => {
+            const activeElement = document.activeElement;
+            const shouldStayFixed = activeElement === searchInput || activeElement === clearSearchBtn;
+
+            if (!shouldStayFixed) {
+                document.body.classList.remove('search-fixed');
+                updateStickyHeader();
+            }
+        }, 0);
+    }
 
     const JSON_URL = 'https://opensheet.elk.sh/1Q-0xFy2av5hAkWYrXFKf0crqd1Ag_GMr0x-68LFf4nE/PERFAMO%20%5B%D0%90%D0%A1%D0%9E%D0%A0%D0%A2%D0%98%D0%9C%D0%95%D0%9D%D0%A2%20%D0%A2%D0%90%20%D0%A6%D0%86%D0%9D%D0%98%5D';
 
@@ -903,6 +951,11 @@ document.addEventListener('DOMContentLoaded', () => {
         applySearch();
         searchInput.focus();
     });
+
+    searchInput.addEventListener('focus', enableFixedSearch);
+    searchInput.addEventListener('blur', disableFixedSearch);
+    clearSearchBtn.addEventListener('focus', enableFixedSearch);
+    clearSearchBtn.addEventListener('blur', disableFixedSearch);
 
     tableBody.addEventListener('click', (e) => {
         const clickedRow = e.target.closest('tr');
