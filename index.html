@@ -696,11 +696,17 @@ document.addEventListener('DOMContentLoaded', () => {
     function keepSearchAnchored(shouldAnchor) {
         if (!shouldAnchor) return;
 
-        window.requestAnimationFrame(() => {
+        const anchorSearch = () => {
             const targetY = getSearchStartY();
-            if (window.scrollY < targetY - 1) {
+            if (Math.abs(window.scrollY - targetY) > 1) {
                 window.scrollTo({ top: targetY, behavior: 'auto' });
             }
+        };
+
+        window.requestAnimationFrame(() => {
+            anchorSearch();
+            window.requestAnimationFrame(anchorSearch);
+            window.setTimeout(anchorSearch, 120);
         });
     }
 
