@@ -653,6 +653,20 @@ document.addEventListener('DOMContentLoaded', () => {
   const scrollMemory = new Map();
   let shouldRestoreScroll = false;
 
+  function forceAccessLogin() {
+    const now = Date.now();
+    const lastRedirect = Number(sessionStorage.getItem('perfamo_access_redirect_at') || 0);
+    if (now - lastRedirect < 8000) {
+      updatedAt.textContent = 'Не авторизовано';
+      loadedCount.textContent = '0 / ' + SHEETS.length + ' прайсів';
+      renderState('Потрібна повторна авторизація', 'error');
+      return;
+    }
+
+    sessionStorage.setItem('perfamo_access_redirect_at', String(now));
+    window.location.replace(`/buy/?reauth=${now}`);
+  }
+
   if (logoutLink) {
     logoutLink.addEventListener('click', event => {
       event.preventDefault();
@@ -665,7 +679,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.body.appendChild(frame);
 
       window.setTimeout(() => {
-        window.location.href = '/buy/';
+        window.location.replace(`/buy/?logout=${Date.now()}`);
       }, 1400);
     });
   }
@@ -1295,12 +1309,26 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       if (!response.ok) {
-        throw new Error(`API returned ${response.status}`);
+        if (response.status === 401 || response.status === 403) {
+          forceAccessLogin();
+          return;
+        }
+        console.error(`API returned ${response.status}`);
+        updatedAt.textContent = 'Не завантажено';
+        loadedCount.textContent = '0 / ' + SHEETS.length + ' прайсів';
+        renderState('Не вдалося завантажити дані з API', 'error');
+        return;
       }
 
       payload = await response.json();
+      sessionStorage.removeItem('perfamo_access_redirect_at');
     } catch (error) {
       console.error(error);
+      forceAccessLogin();
+      return;
+    }
+
+    if (!payload) {
       updatedAt.textContent = 'Не завантажено';
       loadedCount.textContent = '0 / ' + SHEETS.length + ' прайсів';
       renderState('Не вдалося завантажити дані з API', 'error');
