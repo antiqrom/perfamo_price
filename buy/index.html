@@ -533,7 +533,7 @@ mark {
     <a class="brand-logo" href="#" aria-label="PERFAMO">
       <img src="../logo.png" alt="PERFAMO">
     </a>
-    <a class="logout-link" href="/cdn-cgi/access/logout">Вийти</a>
+    <a id="logoutLink" class="logout-link" href="/cdn-cgi/access/logout">Вийти</a>
     <section class="status-strip" aria-label="Стан прайсу">
       <div class="status-item">
         <span class="status-label">Пошук</span>
@@ -637,6 +637,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const contentWrapper = document.querySelector('.content-wrapper');
   const tableWrapper = document.querySelector('.table-wrapper');
   const tableStatus = document.getElementById('tableStatus');
+  const logoutLink = document.getElementById('logoutLink');
 
   let allRows = [];
   let availableSheets = [];
@@ -651,6 +652,23 @@ document.addEventListener('DOMContentLoaded', () => {
   let activeLetter = '';
   const scrollMemory = new Map();
   let shouldRestoreScroll = false;
+
+  if (logoutLink) {
+    logoutLink.addEventListener('click', event => {
+      event.preventDefault();
+      logoutLink.textContent = 'Вихід...';
+      logoutLink.setAttribute('aria-disabled', 'true');
+
+      const frame = document.createElement('iframe');
+      frame.src = logoutLink.href;
+      frame.style.display = 'none';
+      document.body.appendChild(frame);
+
+      window.setTimeout(() => {
+        window.location.href = '/buy/';
+      }, 1400);
+    });
+  }
 
   window.addEventListener('scroll', () => {
     scrollBtn.classList.toggle('show', window.scrollY > 300);
