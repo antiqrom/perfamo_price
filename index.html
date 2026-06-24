@@ -1196,13 +1196,26 @@ document.addEventListener('DOMContentLoaded', () => {
         ));
     }
 
+    function positionLabel(count) {
+        const absCount = Math.abs(Number(count));
+        const lastTwo = absCount % 100;
+        const last = absCount % 10;
+
+        if (lastTwo >= 11 && lastTwo <= 14) return 'позицій';
+        if (last === 1) return 'позиція';
+        if (last >= 2 && last <= 4) return 'позиції';
+        return 'позицій';
+    }
+
     function updateResultCount(visible, total) {
         if (!total) {
             resultCount.textContent = 'Очікування...';
             return;
         }
 
-        resultCount.textContent = visible === total ? `${total} позицій` : `знайдено: ${visible} з ${total}`;
+        resultCount.textContent = visible === total
+            ? `${total} ${positionLabel(total)}`
+            : `знайдено: ${visible} ${positionLabel(visible)} з ${total}`;
     }
 
     function renderState(message, tone = 'neutral') {
